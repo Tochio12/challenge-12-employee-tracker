@@ -1,56 +1,42 @@
 const inquirer = require('inquirer');
-const { removeEmployee, viewDepartmentBudgets, removeDepartment } = require('../../RUT-VIRT-FSF-PT-10-2022-U-LOLC/12-SQL/02-Challenge/Main/db');
 const db = require("./db/connection");
+const mysql = require("mysql2")
 
-const mainPrompts = () => {
-    return inquirer.prompt([
-        {
+db.connect(function(err) {
+    if (err) throw err;
+    console.log("connected as id " + db.threadId);
+  
+    mainPrompts();
+  });
+
+function mainPrompts() {
+    inquirer.prompt({
             type: "list",
-            name: "choice",
+            name: "option",
             message: "What would you like to do?",
             choices: [
                 
                     "View All Employees",
-                    "View All Employees By Department",
-                    "View All Employees By Manager",
                     "Add Employee",
-                    "Remove Employee",
                     "Update Employee Role",
-                    "Update Employee Manager",
                     "View All Roles",
                     "Add Role",
-                    "Remove Role",
                     "View All Departments",
                     "Add Department",
-                    "Remove Department",
-                    "View Total Utilized Budget By Department",
                     "Quit",
             ],
-        },
-    ])
-    .then((data) => {
-        console.log(data.choice);
-        switch (data.choice) {
+        })
+    .then(function(results) {
+        console.log("You entered: " + results.option);
+        switch (results.option) {
             case "View All Employees":
                 viewEmployees();
-                break;
-            case "View All Employees By Department":
-                viewEmployeesByDepartment();
-                break;
-            case "View All Employees By Manager":
-                viewEmployeeByManager();
                 break;
             case "Add Employee":
                 addEmployee();
                 break;
-            case "Remove Employee":
-                removeEmployee();
-                break;
             case "Update Employee Role":
                 updateEmployeeRole();
-                break;
-            case "Update Employee Manager":
-                updateEmoloyeeManager();
                 break;
             case "View All Roles":
                 viewAllRoles();
@@ -58,20 +44,11 @@ const mainPrompts = () => {
             case "Add Role":
                 addRole();
                 break;
-            case "Remove Role":
-                removeRole();
-                break;
             case "View All Departments":
                 viewAllDepartments();
                 break;
             case "Add Department":
                 addDepartment();
-                break;
-            case "Remove Department":
-                removeDepartment();
-                break;
-            case "View Total Utilized Budget By Department":
-                viewTotalUtlilizedBudgetDepartment();
                 break;
             default:
                 quit();
@@ -79,38 +56,135 @@ const mainPrompts = () => {
     })
 };
 
-mainPrompts();
 
 function viewEmployees() {
-    db.query("SELECT * FROM employee;", function (err, res){
+    let query = "SELECT * FROM employee";
+    db.query(query, function (err, res) {
         if (err) throw err;
-        console.clear();
         console.table(res);
+        mainPrompts();
+    })
+};
+
+function addEmployee() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the first name of the employee?",
+            name: "eeFisrtName"
+        },
+        {
+            type: "input",
+            message: "What is the last name of the employee?",
+            name: "eeLastName"
+        },
+        {
+            type: "input",
+            message: "What is the employee's role id number?",
+            name: "roleID"
+        },
+        {
+            type: "input",
+            message: "What is the manager id number?",
+            name: "managerID"
+        }
+    ])
+    .then(function(answer) {
+        db.query
+        ("INSERT INTO employee (first_name, last_name, role_id, manager_id Values (?, ?, ?, ?)", [answer.eeFirstName, answer.eeLastName, answer.roleID, answer.managerID], function(err, res) {
+            if (err) throw err;
+            console.table(res);
+            mainPrompts();
+        })
+    })
+};
+
+function updateEmployeeRole() {
+    inquirer.prompt([
+        {
+        type: "input",  
+        message: "Which employee would you like to update?",
+        name: "eeUpdate"
+        },
+        {
+            type: "input",
+            message: "What do you want to update to?",
+            name: "updateRole"
+        }   
+    ])
+    .then(function(answer) {
+        db.query
+        ('UPDATE employee SET role_id=? WHERE first_name= ?',[answer.updateRole, answer.eeUpdate],function(err, res) {
+            if (err) throw err;
+            console.table(res);
+            mainPrompts();
+        })
     })
 }
 
-function viewEmployeesByDepartment()
+function viewAllRoles() {
+    let query = "SELECT * FROM role";
+    db.query(query, function(err, res) {
+        if (err) throw err;
+        console.table(res);
+        mainPrompts();
+    })
+}
 
-function viewEmployeeByManager()
+function addRole() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What's the name of the role?",
+            name: "roleName"
+        },
+        {
+            type: "input",
+            message: "What is the salary for this role?",
+            name: "salaryTotal"
+        },
+        {
+            type: "input",
+            message: "What is the department id number?",
+            name: "deptID"
+        }
+    ])
+    .then(function(answer) {
+        db.query
+        ("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salaryTotal, answer.deptID], function(err, res) {
+            if (err) throw err;
+            console.table(res);
+            mainPrompts();
+        })
+    })
+}
 
-function addEmployee()
+function viewAllDepartments() {
+    let query = "SELECT * FROM department";
+    db.query(query, function(err, res) {
+      if (err) throw err;
+      console.table(res);
+      mainPrompts();
+    });
+  }
 
-function removeEmployee()
+function addDepartment() {
+    inquirer.prompt(
+    {
+        type: "input",
+        message: "What is the name of the department?",
+        name: "deptName"
+    })
+    .then(function(answer){
+        db.query("INSERT INTO department (name) VALUES (?)", [answer.deptName] , function(err, res) {
+            if (err) throw err;
+            console.table(res)
+            mainPrompts()
+      })
+   })
+}
 
-function updateEmployeeRole()
-
-function updateEmoloyeeManager()
-
-function viewAllRoles()
-
-function addRole()
-
-function removeRole()
-
-function viewAllDepartments()
-
-function addDepartment()
-
-function removeDepartment()
-
-function viewTotalUtlilizedBudgetDepartment()
+function quit() {
+    console.log("Goodbye!");
+    process.exit();
+  }
