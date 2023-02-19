@@ -1,11 +1,8 @@
 const inquirer = require('inquirer');
 const db = require("./db/connection");
-const mysql = require("mysql2")
 
 db.connect(function(err) {
     if (err) throw err;
-    console.log("connected as id " + db.threadId);
-  
     mainPrompts();
   });
 
@@ -71,12 +68,12 @@ function addEmployee() {
         {
             type: "input",
             message: "What is the first name of the employee?",
-            name: "eeFisrtName"
+            name: "FirstName"
         },
         {
             type: "input",
             message: "What is the last name of the employee?",
-            name: "eeLastName"
+            name: "LastName"
         },
         {
             type: "input",
@@ -91,7 +88,13 @@ function addEmployee() {
     ])
     .then(function(answer) {
         db.query
-        ("INSERT INTO employee (first_name, last_name, role_id, manager_id Values (?, ?, ?, ?)", [answer.eeFirstName, answer.eeLastName, answer.roleID, answer.managerID], function(err, res) {
+        ("INSERT INTO employee SET ?",
+        {
+            first_name: answer.FirstName,
+            last_name: answer.LastName,
+            role_id: answer.roleID,
+            manager_id: answer.managerID,
+        }, function(err, res) {
             if (err) throw err;
             console.table(res);
             mainPrompts();
@@ -123,7 +126,7 @@ function updateEmployeeRole() {
 }
 
 function viewAllRoles() {
-    let query = "SELECT * FROM role";
+    let query = "SELECT * FROM roles";
     db.query(query, function(err, res) {
         if (err) throw err;
         console.table(res);
@@ -151,7 +154,7 @@ function addRole() {
     ])
     .then(function(answer) {
         db.query
-        ("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salaryTotal, answer.deptID], function(err, res) {
+        ("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [answer.roleName, answer.salaryTotal, answer.deptID], function(err, res) {
             if (err) throw err;
             console.table(res);
             mainPrompts();
